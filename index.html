@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC 2026 Pool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7f7f5;--surface:#ffffff;--border:#e8e8e6;--border-strong:#d0d0cc;
+  --text:#0a0a0a;--muted:#888884;--soft:#b0b0aa;
+  --accent:#111;--accent2:#333;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;--green-text:#14532d;
+  --gold:#b45309;--gold-bg:#fffbeb;--gold-border:#fde68a;
+  --blue:#1d4ed8;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --radius:10px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+
+/* ── NAV ── */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:52px;position:sticky;top:0;z-index:100;}
+.nav-brand{font-size:13px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;}
+.nav-brand span{font-weight:400;color:var(--muted);}
+.nav-links{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0;}
+.nav-link{padding:5px 14px;font-size:12px;font-weight:500;cursor:pointer;background:transparent;border:none;color:var(--muted);transition:all .12s;white-space:nowrap;}
+.nav-link.active{background:var(--accent);color:#fff;}
+.nav-link:hover:not(.active){background:var(--bg);color:var(--text);}
+@media(max-width:600px){nav{padding:0 1rem;gap:1rem;}.nav-link{padding:5px 10px;font-size:11px;}}
+
+/* ── PAGES ── */
+.page{display:none;max-width:960px;margin:0 auto;padding:2rem 1.5rem;}
+.page.active{display:block;}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:1.75rem;}
+
+/* ── LEADERBOARD ── */
+.lead-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.lead-row{display:grid;grid-template-columns:40px 1fr auto auto;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);gap:12px;transition:background .1s;}
+.lead-row:last-child{border-bottom:none;}
+.lead-row:hover{background:var(--bg);}
+.lead-header{background:var(--bg);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:10px 18px;}
+.rank{font-size:12px;font-weight:700;color:var(--muted);text-align:center;}
+.rank-1{color:#ca8a04;font-size:16px;}
+.rank-2{font-size:15px;}
+.rank-3{font-size:14px;}
+.lead-name{font-weight:600;font-size:14px;}
+.lead-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.bd-chip{font-size:10px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:1px 7px;}
+.bd-chip b{color:var(--text);}
+.bar-wrap{width:80px;}
+.bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;}
+.pts{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;min-width:48px;text-align:right;}
+.pts-unit{font-size:11px;font-weight:400;color:var(--muted);}
+
+/* ── STAGE TRACKER ── */
+.sf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.sf{padding:5px 13px;font-size:12px;font-weight:500;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .12s;}
+.sf.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sf:hover:not(.active){border-color:var(--border-strong);color:var(--text);}
+
+.stage-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;}
+.stage-hdr{padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.stage-hdr-name{font-size:13px;font-weight:700;}
+.stage-hdr-meta{font-size:12px;color:var(--muted);}
+.stage-hdr-prog{margin-left:auto;font-size:12px;font-weight:600;color:var(--green);}
+
+.team-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+.team-item{padding:11px 16px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.team-item:nth-child(n){border-right:none;}
+.team-item-name{font-size:13px;font-weight:600;margin-bottom:5px;}
+.team-item-name.tbd{color:var(--muted);font-weight:400;font-style:italic;}
+.pills{display:flex;flex-wrap:wrap;gap:3px;}
+.pill{font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-border);}
+.pick-ct{font-size:10px;color:var(--soft);margin-top:4px;}
+.tbd-tag{font-size:10px;padding:2px 8px;border-radius:8px;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);}
+.tbd-note{padding:16px;font-size:13px;color:var(--muted);font-style:italic;}
+
+/* ── GUIDELINES ── */
+.guide-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;margin-bottom:1rem;}
+.guide-title{font-size:15px;font-weight:700;margin-bottom:1rem;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.rule-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.rule-item{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:8px;background:var(--bg);}
+.rule-num{font-size:11px;font-weight:700;color:var(--surface);background:var(--accent);border-radius:6px;padding:2px 7px;flex-shrink:0;margin-top:1px;}
+.rule-text{font-size:13px;line-height:1.6;}
+.rule-pts{font-weight:700;color:var(--accent);}
+.guide-note{font-size:12px;color:var(--muted);margin-top:1rem;padding:10px 14px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:8px;}
+
+/* ── TEAMS REFERENCE ── */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+.group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.group-hdr{padding:8px 14px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;letter-spacing:.04em;}
+.group-team{padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;display:flex;align-items:center;gap:8px;transition:background .1s;}
+.group-team:last-child{border-bottom:none;}
+.team-dot{width:6px;height:6px;border-radius:50%;background:var(--border-strong);flex-shrink:0;transition:background .2s;}
+.group-team.qualified{background:var(--green-bg);}
+.group-team.qualified .team-dot{background:var(--green);}
+.group-team.qualified .team-label{color:var(--green-text);font-weight:600;}
+.group-team.eliminated{background:#fafafa;}
+.group-team.eliminated .team-dot{background:var(--border);}
+.group-team.eliminated .team-label{color:var(--soft);text-decoration:line-through;}
+.ref-legend{display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+
+/* ── ADMIN ── */
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.admin-card-hdr{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.admin-card-title{font-size:13px;font-weight:700;}
+.admin-card-meta{font-size:11px;color:var(--muted);}
+.admin-team{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .1s;}
+.admin-team:last-child{border-bottom:none;}
+.admin-team:hover{background:var(--bg);}
+.admin-team input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.admin-team-name{font-size:13px;flex:1;}
+.admin-team.checked .admin-team-name{color:var(--green);font-weight:600;}
+.admin-note{font-size:12px;color:var(--muted);background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:8px;padding:10px 14px;margin-bottom:1.5rem;}
+
+.save-btn{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;border:none;box-shadow:0 4px 14px rgba(0,0,0,.18);display:none;cursor:pointer;z-index:200;transition:opacity .15s;}
+.save-btn.show{display:block;}
+.save-btn:hover{background:var(--accent2);}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.15);display:none;z-index:200;}
+.toast.show{display:block;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading{text-align:center;padding:3rem;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">WC 2026 Pool <span>· 15 predictors</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('leaderboard',this)">Leaderboard</button>
+    <button class="nav-link" onclick="showPage('tracker',this)">Stage tracker</button>
+    <button class="nav-link" onclick="showPage('guidelines',this)">Guidelines</button>
+    <button class="nav-link" onclick="showPage('teams',this)">Teams</button>
+  </div>
+</nav>
+
+<!-- LEADERBOARD -->
+<div class="page active" id="page-leaderboard">
+  <div class="page-title">Leaderboard</div>
+  <div class="page-sub" id="lead-sub">Loading…</div>
+  <div id="lead-content"><div class="loading"><span class="spinner"></span></div></div>
+</div>
+
+<!-- STAGE TRACKER -->
+<div class="page" id="page-tracker">
+  <div class="page-title">Stage tracker</div>
+  <div class="page-sub">Qualified teams by stage — who predicted them</div>
+  <div class="sf-row" id="sf-row"></div>
+  <div id="tracker-content"><div class="loading"><span class="spinner"></span></div></div>
+</div>
+
+<!-- GUIDELINES -->
+<div class="page" id="page-guidelines">
+  <div class="page-title">Guidelines</div>
+  <div class="page-sub">How points are awarded</div>
+  <div class="guide-card">
+    <div class="guide-title">Scoring rules</div>
+    <ul class="rule-list">
+      <li class="rule-item"><span class="rule-num">1</span><span class="rule-text">Predict teams that qualify for the <span class="rule-pts">Round of 32</span> — <span class="rule-pts">10 points</span> per correct team</span></li>
+      <li class="rule-item"><span class="rule-num">2</span><span class="rule-text">Predict teams that qualify for the <span class="rule-pts">Round of 16</span> — <span class="rule-pts">20 points</span> per correct team</span></li>
+      <li class="rule-item"><span class="rule-num">3</span><span class="rule-text">Predict teams that qualify for the <span class="rule-pts">Quarterfinal</span> — <span class="rule-pts">30 points</span> per correct team</span></li>
+      <li class="rule-item"><span class="rule-num">4</span><span class="rule-text">Predict teams that qualify for the <span class="rule-pts">Semifinal</span> — <span class="rule-pts">40 points</span> per correct team</span></li>
+      <li class="rule-item"><span class="rule-num">5</span><span class="rule-text">Predict teams that qualify for the <span class="rule-pts">Final</span> — <span class="rule-pts">50 points</span> per correct team</span></li>
+      <li class="rule-item"><span class="rule-num">6</span><span class="rule-text">Predict the <span class="rule-pts">Winner</span> — <span class="rule-pts">60 points</span></span></li>
+    </ul>
+    <div class="guide-note">It is not necessary to predict teams in any particular order — you just need to have picked the team for that stage, in any slot.</div>
+  </div>
+  <div class="guide-card">
+    <div class="guide-title">Maximum possible score</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">320</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Round of 32<br>32 × 10 pts</div></div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">320</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Round of 16<br>16 × 20 pts</div></div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">240</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Quarterfinal<br>8 × 30 pts</div></div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">160</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Semifinal<br>4 × 40 pts</div></div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">100</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Final<br>2 × 50 pts</div></div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;text-align:center;"><div style="font-size:20px;font-weight:700;">60</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Winner<br>1 × 60 pts</div></div>
+      <div style="padding:12px;background:var(--accent);border-radius:8px;text-align:center;color:#fff;"><div style="font-size:20px;font-weight:700;">1,200</div><div style="font-size:11px;opacity:.7;margin-top:2px;">Total possible</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAMS REFERENCE -->
+<div class="page" id="page-teams">
+  <div class="page-title">Teams reference</div>
+  <div class="page-sub">All 48 teams — 12 groups of 4</div>
+  <div class="ref-legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Qualified for Round of 32</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--border-strong)"></span>Eliminated</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--border)"></span>Result TBD</span>
+  </div>
+  <div class="groups-grid" id="teams-grid"></div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="page-title">Admin</div>
+  <div class="page-sub">Check off teams as they qualify — leaderboard updates for everyone</div>
+  <div class="admin-note">🔒 Keep this URL private. Share only the main link with friends (without <strong>#admin</strong>).</div>
+  <div class="admin-grid" id="admin-grid"><div class="loading"><span class="spinner"></span></div></div>
+</div>
+
+<button class="save-btn" id="save-btn" onclick="saveResults()">Save changes</button>
+<div class="toast" id="toast">✓ Saved — leaderboard updated</div>
+
+<script>
+const NAMES=['Bande','Chime','Choedup','Choesang','Choezin','Dadul','Dechen','Dhonden','Gyaltsen','Paydon','Sonam','Tenchoe','Tentop','Wosel','Zomkey'];
+
+const PICKS={
+  Bande:    {R32:['Germany','South Africa','France','Sweden','Mexico','Qatar','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','Türkiye','New Zealand','Belgium','Saudi Arabia','Brazil','Japan','Ecuador','Norway','South Korea','Senegal','England','Algeria','Argentina','Uruguay','Australia','Egypt','Switzerland','Jordan','Portugal','Ghana'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Mexico','Sweden','Morocco','Belgium'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['France']},
+  Chime:    {R32:['Germany','Sweden','France','Saudi Arabia','South Korea','Canada','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','Türkiye','Norway','Belgium','Czechia','Brazil','Japan','Ecuador','Senegal','Mexico','Scotland','England','Algeria','Argentina','Uruguay','United States','Egypt','Switzerland','Iran','Portugal','Australia'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Mexico','Morocco'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+  Choedup:  {R32:['Germany','Scotland','France','Australia','South Korea','Canada','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','United States','Norway','Belgium','Saudi Arabia','Brazil','Japan','Ecuador','Senegal','Mexico','Sweden','England','Ivory Coast','Argentina','Uruguay','Paraguay','Egypt','Switzerland','Iran','Portugal','Ghana'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Mexico','Morocco'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Brazil'],Winner:['Brazil']},
+  Choesang: {R32:['Germany','Sweden','France','Scotland','Czechia','Canada','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','United States','Ivory Coast','Belgium','Senegal','Brazil','Japan','Ecuador','Norway','Mexico','South Korea','England','DR Congo','Argentina','Uruguay','Türkiye','Egypt','Switzerland','Iran','Portugal','Algeria'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ivory Coast'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+  Choezin:  {R32:['Germany','Scotland','France','Türkiye','South Korea','Canada','Netherlands','Morocco','Colombia','Ghana','Spain','Algeria','Paraguay','Sweden','Egypt','Czechia','Brazil','Japan','Ecuador','Senegal','Mexico','Saudi Arabia','England','Norway','Argentina','Uruguay','United States','Belgium','Switzerland','Ivory Coast','Portugal','Croatia'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Algeria'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['Brazil','Argentina'],Winner:['Argentina']},
+  Dadul:    {R32:['Ecuador','South Korea','France','United States','Mexico','Canada','Netherlands','Morocco','Colombia','England','Spain','Austria','Türkiye','Japan','Belgium','Saudi Arabia','Brazil','Sweden','Germany','Norway','Czechia','Senegal','Croatia','Egypt','Argentina','Uruguay','Türkiye','Iran','Switzerland','Ivory Coast','Portugal','Paraguay'],R16:['France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Mexico','Morocco','Germany'],QF:['France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal','Germany'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Brazil'],Winner:['Brazil']},
+  Dechen:   {R32:['Germany','Scotland','France','Sweden','Czechia','Canada','Netherlands','Brazil','Colombia','England','Spain','Austria','Türkiye','Qatar','Belgium','South Korea','Morocco','Japan','Ivory Coast','Senegal','Mexico','Saudi Arabia','Croatia','Norway','Argentina','Uruguay','United States','Egypt','Switzerland','Ecuador','Portugal','Paraguay'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ivory Coast','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ecuador'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Brazil'],Winner:['Brazil']},
+  Dhonden:  {R32:['France','Argentina','Brazil','England','Spain','Portugal','Germany','Netherlands','Italy','Belgium','Croatia','Uruguay','Morocco','Denmark','Japan','Mexico','United States','Colombia','Switzerland','Senegal','Serbia','South Korea','Ecuador','Poland','Canada','Australia','Nigeria','Türkiye','Sweden','Austria','Norway','Cameroon'],R16:['France','Argentina','Brazil','England','Spain','Portugal','Germany','Netherlands','Italy','Belgium','Japan','Mexico','Colombia','Switzerland','Ecuador','Norway'],QF:['France','Argentina','Brazil','England','Spain','Portugal','Germany','Netherlands'],SF:['France','Argentina','Spain','Germany'],Final:['France','Spain'],Winner:['France']},
+  Gyaltsen: {R32:['Germany','South Korea','France','Paraguay','Czechia','Canada','Japan','Morocco','Colombia','Croatia','Spain','Algeria','United States','Sweden','Belgium','Saudi Arabia','Brazil','Netherlands','Ecuador','Senegal','Mexico','Norway','England','Egypt','Argentina','Uruguay','Türkiye','Iran','Switzerland','Ivory Coast','Portugal','Panama'],R16:['Germany','France','Japan','Colombia','Spain','Brazil','Netherlands','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Mexico'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Brazil'],Winner:['Brazil']},
+  Paydon:   {R32:['Germany','Sweden','France','Scotland','South Korea','Canada','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','Türkiye','Norway','Belgium','Algeria','Brazil','Japan','Ecuador','Senegal','Mexico','Ivory Coast','England','DR Congo','Argentina','Uruguay','United States','Egypt','Switzerland','Iran','Portugal','Ghana'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ivory Coast'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+  Sonam:    {R32:['Germany','Sweden','France','Iran','Czechia','Canada','Japan','Morocco','Colombia','Croatia','Spain','Austria','United States','Ecuador','Belgium','South Korea','Brazil','Netherlands','Ivory Coast','Senegal','Mexico','Sweden','England','DR Congo','Argentina','Uruguay','Türkiye','Egypt','Switzerland','Norway','Portugal','Ghana'],R16:['Germany','France','Japan','Colombia','Spain','Brazil','Netherlands','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ivory Coast'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+  Tenchoe:  {R32:['South Korea','Switzerland','Germany','Senegal','Netherlands','Morocco','Brazil','Japan','France','Scotland','Ecuador','Norway','Mexico','Haiti','England','Algeria','United States','Bosnia & Herzegovina','Belgium','South Africa','Colombia','Croatia','Spain','Austria','Canada','Tunisia','Argentina','Uruguay','Portugal','Paraguay','Türkiye','Egypt'],R16:['Switzerland','Germany','Netherlands','Morocco','Brazil','Japan','France','Ecuador','Norway','England','Colombia','Spain','Argentina','Uruguay','Portugal','Belgium'],QF:['Germany','Netherlands','Brazil','France','Norway','England','Spain','Argentina'],SF:['Germany','Brazil','France','Argentina'],Final:['Brazil','Argentina'],Winner:['Argentina']},
+  Tentop:   {R32:['Germany','Morocco','France','Sweden','South Korea','Canada','Netherlands','Scotland','Colombia','Croatia','Spain','Austria','United States','Japan','Belgium','Czechia','Brazil','Bosnia & Herzegovina','Ecuador','Senegal','Mexico','Ivory Coast','England','Norway','Argentina','Uruguay','Türkiye','Egypt','Switzerland','Algeria','Portugal','Ghana'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ivory Coast'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+  Wosel:    {R32:['Germany','Mexico','France','Australia','South Africa','Qatar','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','Türkiye','Sweden','Belgium','Uruguay','Brazil','Japan','Ivory Coast','Norway','South Korea','Scotland','England','Uzbekistan','Argentina','Saudi Arabia','United States','Iran','Switzerland','Ecuador','Portugal','Senegal'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ivory Coast','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ecuador'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['France']},
+  Zomkey:   {R32:['Germany','Czechia','France','Bosnia & Herzegovina','South Korea','Switzerland','Netherlands','Morocco','Colombia','Croatia','Spain','Austria','United States','Australia','Belgium','Ivory Coast','Brazil','Japan','Ecuador','Senegal','Mexico','Sweden','England','Norway','Argentina','Uruguay','Türkiye','Egypt','Canada','Algeria','Portugal','Ghana'],R16:['Germany','France','Netherlands','Colombia','Spain','Brazil','Japan','Ecuador','Argentina','England','Switzerland','Portugal','Norway','Belgium','Morocco','Ivory Coast'],QF:['Germany','France','Netherlands','Spain','Brazil','Argentina','Switzerland','Portugal'],SF:['France','Spain','Brazil','Argentina'],Final:['France','Argentina'],Winner:['Argentina']},
+};
+
+// Team order from screenshot — used for display order in tracker
+const TEAM_ORDER={
+  R32:['Mexico','United States','Germany','Argentina','France','Norway','Colombia','Switzerland','Canada','Brazil','Morocco','South Africa','Ivory Coast','Ecuador','Netherlands','Japan','Sweden','Bosnia & Herzegovina','Australia','Spain','Cape Verde','Paraguay','Belgium','Egypt','Portugal','England','Ghana','Senegal'],
+  R16:['Mexico','United States','Germany','Argentina','France','Norway','Colombia','Switzerland','Canada','Brazil','Morocco','South Africa','Ivory Coast','Ecuador','Netherlands','Japan','Sweden','Bosnia & Herzegovina','Australia','Spain','Cape Verde','Paraguay','Belgium','Egypt','Portugal','England','Ghana','Senegal'],
+  QF: ['Mexico','United States','Germany','Argentina','France','Norway','Colombia','Switzerland','Brazil','Morocco','Netherlands','Japan','Spain','Belgium','Portugal','England'],
+  SF: ['Germany','Argentina','France','Colombia','Brazil','Netherlands','Spain','England'],
+  Final:['Germany','Argentina','France','Brazil','Spain','England'],
+  Winner:['Germany','Argentina','France','Brazil','Spain','England','Colombia','Netherlands'],
+};
+
+const VALID_48=new Set(['Mexico','South Africa','South Korea','Czechia','Canada','Bosnia & Herzegovina','Qatar','Switzerland','Brazil','Morocco','Haiti','Scotland','United States','Paraguay','Australia','Türkiye','Germany','Curaçao','Ivory Coast','Ecuador','Netherlands','Japan','Sweden','Tunisia','Belgium','Egypt','Iran','New Zealand','Spain','Cape Verde','Saudi Arabia','Uruguay','France','Senegal','Iraq','Norway','Argentina','Algeria','Austria','Jordan','Portugal','DR Congo','Uzbekistan','Colombia','England','Croatia','Ghana','Panama']);
+
+const STAGES=[
+  {key:'R32',label:'Round of 32',pts:10,total:32},
+  {key:'R16',label:'Round of 16',pts:20,total:16},
+  {key:'QF', label:'Quarterfinal',pts:30,total:8},
+  {key:'SF', label:'Semifinal',pts:40,total:4},
+  {key:'Final',label:'Final',pts:50,total:2},
+  {key:'Winner',label:'Winner',pts:60,total:1},
+];
+
+const SK='wc2026_qual_v2';
+let qualified={R32:new Set(['Mexico','United States','Germany','Argentina','France','Norway','Colombia','Switzerland','Canada','Brazil','Morocco','South Africa','Ivory Coast','Ecuador','Netherlands','Japan','Sweden','Bosnia & Herzegovina','Australia','Spain','Cape Verde','Paraguay']),R16:new Set(),QF:new Set(),SF:new Set(),Final:new Set(),Winner:new Set()};
+let dirty=false;
+let activeStage='ALL';
+
+async function load(){
+  try{const r=await window.storage.get(SK);if(r&&r.value){const d=JSON.parse(r.value);Object.keys(d).forEach(k=>{qualified[k]=new Set(d[k]);});}}catch(e){}
+}
+
+async function saveResults(){
+  const out={};Object.keys(qualified).forEach(k=>{out[k]=[...qualified[k]];});
+  try{
+    await window.storage.set(SK,JSON.stringify(out));
+    dirty=false;
+    document.getElementById('save-btn').classList.remove('show');
+    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
+    renderLeaderboard();renderTracker();
+  }catch(e){alert('Save failed — try again');}
+}
+
+function score(name){
+  let total=0;const bd={};
+  STAGES.forEach(s=>{const p=PICKS[name][s.key]||[];const c=p.filter(t=>qualified[s.key].has(t)).length;bd[s.key]=c*s.pts;total+=c*s.pts;});
+  return{total,bd};
+}
+
+function renderLeaderboard(){
+  const rows=NAMES.map(n=>({name:n,...score(n)})).sort((a,b)=>b.total-a.total);
+  const max=rows[0]?.total||1;
+  const conf=STAGES.reduce((s,st)=>s+qualified[st.key].size,0);
+  document.getElementById('lead-sub').textContent=`${conf} teams confirmed across all stages · updates live`;
+
+  const medals=['🥇','🥈','🥉'];
+  let rank=1;
+  const html=rows.map((r,i)=>{
+    if(i>0&&r.total<rows[i-1].total)rank=i+1;
+    const medal=rank<=3?medals[rank-1]:'';
+    const bw=max>0?Math.round(r.total/max*100):0;
+    const chips=STAGES.filter(s=>r.bd[s.key]>0).map(s=>`<span class="bd-chip">${s.label.replace('Round of ','R').replace('uarterfinal','F').replace('emifinal','F')}: <b>${r.bd[s.key]}</b></span>`).join('');
+    return`<div class="lead-row">
+      <div class="rank rank-${rank}">${medal||rank}</div>
+      <div><div class="lead-name">${r.name}</div>${chips?`<div class="lead-breakdown">${chips}</div>`:''}</div>
+      <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${bw}%"></div></div></div>
+      <div class="pts">${r.total}<span class="pts-unit"> pts</span></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('lead-content').innerHTML=`<div class="lead-wrap">
+    <div class="lead-row lead-header" style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">
+      <div>Rank</div><div>Predictor</div><div></div><div style="text-align:right">Points</div>
+    </div>${html}</div>`;
+}
+
+function renderTracker(){
+  // Pills
+  document.getElementById('sf-row').innerHTML=['ALL',...STAGES.map(s=>s.key)].map(k=>{
+    const label=k==='ALL'?'All stages':STAGES.find(s=>s.key===k).label;
+    return`<button class="sf${activeStage===k?' active':''}" onclick="setStage('${k}')">${label}</button>`;
+  }).join('');
+
+  const show=activeStage==='ALL'?STAGES:STAGES.filter(s=>s.key===activeStage);
+  let html='';
+  show.forEach(st=>{
+    const qual=qualified[st.key];
+    const nConf=qual.size;
+    // Use screenshot order for confirmed, then TBD slots
+    const orderedTeams=(TEAM_ORDER[st.key]||[]).filter(t=>qual.has(t));
+    const tbdCount=st.total-nConf;
+
+    html+=`<div class="stage-block">
+      <div class="stage-hdr">
+        <span class="stage-hdr-name">${st.label}</span>
+        <span class="stage-hdr-meta">${st.pts} pts each</span>
+        <span class="stage-hdr-prog">${nConf} / ${st.total} confirmed</span>
+      </div>`;
+
+    if(nConf===0){
+      html+=`<div class="tbd-note">No teams confirmed yet <span class="tbd-tag">TBD</span></div>`;
+    }else{
+      html+=`<div class="team-list">`;
+      orderedTeams.forEach(team=>{
+        const pickers=NAMES.filter(n=>(PICKS[n][st.key]||[]).includes(team));
+        const pills=pickers.map(p=>`<span class="pill">${p}</span>`).join('');
+        html+=`<div class="team-item">
+          <div class="team-item-name">${team}</div>
+          <div class="pills">${pills}</div>
+          <div class="pick-ct">${pickers.length} of ${NAMES.length} picked</div>
+        </div>`;
+      });
+      // TBD slots
+      for(let i=0;i<tbdCount;i++){
+        html+=`<div class="team-item"><div class="team-item-name tbd">TBD</div><span class="tbd-tag">Awaiting result</span></div>`;
+      }
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  });
+  document.getElementById('tracker-content').innerHTML=html||`<div class="loading" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">No results yet for this stage</div>`;
+}
+
+function setStage(k){activeStage=k;renderTracker();}
+
+const GROUPS=[
+  {name:'Group A',teams:['Mexico','South Africa','South Korea','Czechia']},
+  {name:'Group B',teams:['Canada','Bosnia & Herzegovina','Qatar','Switzerland']},
+  {name:'Group C',teams:['Brazil','Morocco','Haiti','Scotland']},
+  {name:'Group D',teams:['United States','Paraguay','Australia','Türkiye']},
+  {name:'Group E',teams:['Germany','Curaçao','Ivory Coast','Ecuador']},
+  {name:'Group F',teams:['Netherlands','Japan','Sweden','Tunisia']},
+  {name:'Group G',teams:['Belgium','Egypt','Iran','New Zealand']},
+  {name:'Group H',teams:['Spain','Cape Verde','Saudi Arabia','Uruguay']},
+  {name:'Group I',teams:['France','Senegal','Iraq','Norway']},
+  {name:'Group J',teams:['Argentina','Algeria','Austria','Jordan']},
+  {name:'Group K',teams:['Portugal','DR Congo','Uzbekistan','Colombia']},
+  {name:'Group L',teams:['England','Croatia','Ghana','Panama']},
+];
+
+function renderTeams(){
+  const r32=qualified.R32;
+  const hasResults=r32.size>0;
+  // Count how many from each group have qualified
+  const groupQual={};
+  GROUPS.forEach(g=>{groupQual[g.name]=g.teams.filter(t=>r32.has(t)).length;});
+
+  const html=GROUPS.map(g=>{
+    const rows=g.teams.map(team=>{
+      const isQual=r32.has(team);
+      // Eliminated: group has sent its 2 guaranteed qualifiers and this team isn't one of them
+      const isElim=hasResults&&!isQual&&groupQual[g.name]>=2;
+      const cls=isQual?'qualified':isElim?'eliminated':'';
+      return`<div class="group-team ${cls}"><span class="team-dot"></span><span class="team-label">${team}</span></div>`;
+    }).join('');
+    return`<div class="group-card"><div class="group-hdr">${g.name}</div>${rows}</div>`;
+  }).join('');
+  document.getElementById('teams-grid').innerHTML=html;
+}
+
+function getAdminTeams(stageKey){
+  const picked=new Set();
+  NAMES.forEach(n=>{(PICKS[n][stageKey]||[]).forEach(t=>picked.add(t));});
+  return[...picked].filter(t=>VALID_48.has(t)).sort();
+}
+
+function renderAdmin(){
+  let html='';
+  STAGES.forEach(st=>{
+    const teams=getAdminTeams(st.key);
+    const nConf=qualified[st.key].size;
+    html+=`<div class="admin-card"><div class="admin-card-hdr"><span class="admin-card-title">${st.label}</span><span class="admin-card-meta">${nConf}/${st.total} · ${st.pts}pts</span></div>`;
+    teams.forEach(team=>{
+      const chk=qualified[st.key].has(team);
+      const sid=`adm-${st.key}-${team.replace(/\W/g,'_')}`;
+      html+=`<label class="admin-team${chk?' checked':''}" id="${sid}">
+        <input type="checkbox"${chk?' checked':''} onchange="toggle('${st.key}','${team}','${sid}',this.checked)">
+        <span class="admin-team-name">${team}</span>
+      </label>`;
+    });
+    html+=`</div>`;
+  });
+  document.getElementById('admin-grid').innerHTML=html;
+}
+
+function toggle(stage,team,sid,chk){
+  if(chk)qualified[stage].add(team);else qualified[stage].delete(team);
+  const el=document.getElementById(sid);if(el)el.className='admin-team'+(chk?' checked':'');
+  dirty=true;document.getElementById('save-btn').classList.add('show');
+}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='admin')renderAdmin();
+  if(id==='teams')renderTeams();
+}
+
+function checkHash(){
+  if(location.hash==='#admin'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(t=>t.classList.remove('active'));
+    document.getElementById('page-admin').classList.add('active');
+  }
+}
+
+async function init(){
+  await load();
+  renderLeaderboard();
+  renderTracker();
+  renderTeams();
+  checkHash();
+  setInterval(async()=>{if(!dirty){await load();renderLeaderboard();renderTracker();renderTeams();}},15000);
+}
+init();
+window.addEventListener('hashchange',checkHash);
+</script>
+</body>
+</html>
